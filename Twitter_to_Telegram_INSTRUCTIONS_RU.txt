@@ -1,0 +1,100 @@
+Twitter(X) → Telegram: Пошаговая инструкция
+
+Эта инструкция поможет запустить бота, который пересылает в Telegram-чат твиты от аккаунтов,
+на которых вы подписаны в X (Twitter), если твит содержит заданные ключевые слова (например: Биткоин).
+
+--------------------------------------
+1) Установка Python и распаковка проекта
+--------------------------------------
+1. Установите Python 3.10+ (https://python.org).
+2. Скачайте и распакуйте архив проекта 'twitter_to_telegram.zip' в любую папку (например: C:\twitter_to_telegram).
+
+--------------------------------------
+2) Подготовка окружения
+--------------------------------------
+В терминале/консоли выполните:
+Windows:
+    cd C:\twitter_to_telegram
+    py -3 -m venv .venv
+    .venv\Scripts\activate
+Linux/Mac:
+    cd ~/twitter_to_telegram
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+Далее установите зависимости:
+    pip install -r requirements.txt
+
+--------------------------------------
+3) Настройка .env
+--------------------------------------
+Скопируйте файл .env.example как .env и заполните значения:
+
+# --- Telegram ---
+TELEGRAM_BOT_TOKEN=ВАШ_ТОКЕН_БОТА
+TELEGRAM_CHAT_ID=ID_ЧАТА_ИЛИ_КАНАЛА
+
+# --- X (Twitter) ---
+X_BEARER_TOKEN=ВАШ_X_API_BEARER_TOKEN
+X_USER_ID=ID_ВАШЕГО_АККАУНТА_X  (цифры)
+
+# --- Режимы источника аккаунтов ---
+USE_STATIC_USERNAMES=false       # true — если хотите задать список юзернеймов вручную
+STATIC_USERNAMES=elonmusk,binance,...  # если включите USE_STATIC_USERNAMES=true
+
+# --- Фильтр ---
+KEYWORDS=биткоин,bitcoin,btc
+EXCLUDE_RETWEETS=true
+EXCLUDE_REPLIES=true
+
+# --- Параметры опроса ---
+POLL_SECONDS=45
+MAX_TWEETS_PER_USER=5
+
+# --- Прочее ---
+STATE_FILE=data/state.json
+LOG_LEVEL=INFO
+
+Как получить TELEGRAM_CHAT_ID:
+- Добавьте вашего бота в группу/канал (если нужно — дайте права админа).
+- Напишите любое сообщение в чат.
+- Узнайте chat_id через @RawDataBot (или другим инструментом).
+
+Как получить X_USER_ID:
+- Возьмите свой username (без @) и выполните HTTP-запрос к X API v2 users/by/username/{username}, отправив Bearer Token в заголовке.
+- В ответе будет поле id — это ваш X_USER_ID.
+
+Если у вашего тарифа X API недоступен список подписок (following):
+- Установите USE_STATIC_USERNAMES=true и перечислите нужные юзернеймы в STATIC_USERNAMES.
+
+--------------------------------------
+4) Первый запуск
+--------------------------------------
+В активированном виртуальном окружении запустите:
+    python src/twitter_to_telegram.py
+
+Проверьте, что в выбранный Telegram-чат приходят сообщения при появлении подходящих твитов.
+
+--------------------------------------
+5) Автозапуск (опционально)
+--------------------------------------
+Windows (Task Scheduler):
+- Используйте прилагаемый run.bat (в корне проекта).
+- Создайте задачу в Планировщике заданий, укажите запуск run.bat при входе в систему.
+
+Linux (systemd):
+1) Откройте и поправьте путь в deploy/twitter2tg.service (WorkingDirectory/ExecStart).
+2) Установите сервис:
+    sudo cp deploy/twitter2tg.service /etc/systemd/system/
+    sudo systemctl daemon-reload
+    sudo systemctl enable --now twitter2tg
+
+--------------------------------------
+6) Советы и устранение неполадок
+--------------------------------------
+- Убедитесь, что TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID корректны.
+- Проверьте, что X_BEARER_TOKEN активен и имеет доступ к нужным эндпоинтам.
+- Если сообщений слишком много/мало — настройте KEYWORDS, EXCLUDE_* и POLL_SECONDS.
+- Состояние последних обработанных твитов хранится в data/state.json — при необходимости удалите/очистите файл.
+
+Готово! Если нужен преднастроенный .env под ваши параметры — напишите, подготовлю.
