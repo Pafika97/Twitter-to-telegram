@@ -1,0 +1,14 @@
+[Unit]
+Description=Twitter(X) -> Telegram keyword forwarder
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/twitter_to_telegram
+ExecStart=/opt/twitter_to_telegram/.venv/bin/python /opt/twitter_to_telegram/src/twitter_to_telegram.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
